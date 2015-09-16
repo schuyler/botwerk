@@ -10,9 +10,13 @@ Pyro4
 cython
 numpy
 -e git+https://github.com/scipy/scipy#egg=scipy-dev
--e git+https://github.com/kelp404/six
+-e git+https://github.com/kelp404/six#egg=six-dev
 gensim
 
 # keras
 # ¯\_(ツ)_/¯
 keras
+
+
+# nltk... yayyy
+nltk
