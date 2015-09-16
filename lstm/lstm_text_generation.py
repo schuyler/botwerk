@@ -19,8 +19,9 @@ import random, sys
     has at least ~100k characters. ~1M is better.
 '''
 
-path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-text = open(path).read().lower()
+#path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
+path = "t8.shakespeare.txt"
+text = open(path).read() #.lower()
 print('corpus length:', len(text))
 
 chars = set(text)
@@ -99,3 +100,5 @@ for iteration in range(1, 60):
             sys.stdout.write(next_char)
             sys.stdout.flush()
         print()
+
+    model.save_weights("%s.%03d.hdf5" % (path, iteration))
