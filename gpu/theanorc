@@ -1,0 +1,12 @@
+# copy this file to ~/.theanorc
+
+[global]
+floatX=float32
+device=gpu
+[mode]=FAST_RUN
+
+[nvcc]
+fastmath=True
+
+[cuda]
+root=/usr/local/cuda
