@@ -1,0 +1,18 @@
+# slack
+requests
+python-daemon
+pyyaml
+websocket-client
+slackclient
+Pyro4
+
+# gensim
+cython
+numpy
+-e git+https://github.com/scipy/scipy#egg=scipy-dev
+-e git+https://github.com/kelp404/six
+gensim
+
+# keras
+# ¯\_(ツ)_/¯
+keras
