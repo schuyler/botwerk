@@ -4,7 +4,7 @@ from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 from keras.datasets.data_utils import get_file
 import numpy as np
-import random, sys
+import random, sys, re, os
 
 '''
     Example script to generate text from Nietzsche's writings.
@@ -60,6 +60,15 @@ model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
+start_iteration = 0
+files = [f for f in os.listdir(".") if re.match(path + r'\.\d+\.hdf5$', f)]
+files.sort()
+if files[-1]:
+    w_file = files[-1]
+    start_iteration = int(w_file.rsplit(".",2)[-2])
+    print("Loading iteration #%d from %s..." % (start_iteration, w_file))
+    model.load_weights(w_file)
+
 # helper function to sample an index from a probability array
 def sample(a, temperature=1.0):
     a = np.log(a)/temperature
@@ -67,7 +76,7 @@ def sample(a, temperature=1.0):
     return np.argmax(np.random.multinomial(1,a,1))
 
 # train the model, output generated text after each iteration
-for iteration in range(1, 60):
+for iteration in range(start_iteration + 1, 100):
     print()
     print('-' * 50)
     print('Iteration', iteration)
