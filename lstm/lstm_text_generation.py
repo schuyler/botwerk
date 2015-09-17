@@ -30,7 +30,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 20
+maxlen = 16
 step = 3
 sentences = []
 next_chars = []
@@ -62,8 +62,8 @@ model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
 start_iteration = 0
 files = [f for f in os.listdir(".") if re.match(path + r'\.\d+\.hdf5$', f)]
-files.sort()
-if files[-1]:
+if files:
+    files.sort()
     w_file = files[-1]
     start_iteration = int(w_file.rsplit(".",2)[-2])
     print("Loading iteration #%d from %s..." % (start_iteration, w_file))
