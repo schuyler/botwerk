@@ -10,7 +10,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 print("Loading", sys.argv[1])
 start = time.time()
-model = ModelService.load_word2vec_format(sys.argv[1], binary=True)
+model = ModelService.load_word2vec_format(sys.argv[1], binary=(".bin" in sys.argv[1]))
 #model = gensim.models.Word2Vec()
 stop=time.time()
 print "Loaded model in", (stop-start), "s"
