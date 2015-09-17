@@ -13,7 +13,8 @@ min_count = 1e6
 
 class Annalogue(object):
     def underscore(self, word):
-        return word.strip().replace(" ", "_")
+        # the lower() is just for the non-GoogleNews models
+        return word.strip().replace(" ", "_") #.lower()
 
     def find_most_similar(self, pos, neg):
         try:

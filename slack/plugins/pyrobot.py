@@ -2,24 +2,26 @@ import Pyro4
 import time, logging, re
 crontable = []
 outputs = []
+config = {}
 
-bot_name = "annalogue"
-bot = Pyro4.core.Proxy('PYRONAME:' + bot_name)
-bot_uid = "U0AJBPH7X"
-mention = re.compile(r'^\s*<@' + bot_uid + r'>\W+?', re.IGNORECASE)
-print mention
+def setup():
+    bot_name = config["name"]
+    bot_uid = config["user_id"]
+    config["bot"] = Pyro4.core.Proxy('PYRONAME:' + bot_name)
+    config["mention"] = re.compile(r'^\s*<@' + bot_uid + r'>\W+?', re.IGNORECASE)
+    print "pyrobot setup:", config
 
 def process_message(data):
     if not 'text' in data: return
-    if data['channel'].startswith("D") or mention.match(data['text']):
+    if data['channel'].startswith("D") or config["mention"].match(data['text']):
         print repr(data)
-        data['text'] = mention.sub("", data["text"])
+        data['text'] = config["mention"].sub("", data["text"])
         retry = True
         while retry:
             retry = False
             try:
                 if not 'text' in data: return
-                response = bot.tell(data['text'])
+                response = config["bot"].tell(data['text'])
                 if response:
                     outputs.append([data['channel'], response])
             except Pyro4.errors.ConnectionClosedError:
