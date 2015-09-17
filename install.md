@@ -1,4 +1,5 @@
-sudo apt-get install git build-essential gfortran hdf5 libblas-dev liblapack-dev
+sudo apt-get update
+sudo apt-get install git build-essential gfortran libhdf5-dev libopenblas-dev liblapack-dev python-dev
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py 
 sudo pip install virtualenv
