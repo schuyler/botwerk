@@ -20,7 +20,7 @@ import random, sys, re, os
 '''
 
 #path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-path = "t8.shakespeare.txt"
+path = sys.argv[1] #"t8.shakespeare.txt"
 text = open(path).read() #.lower()
 print('corpus length:', len(text))
 
