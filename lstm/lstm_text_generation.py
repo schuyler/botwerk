@@ -81,6 +81,7 @@ for iteration in range(start_iteration + 1, 100):
     print('-' * 50)
     print('Iteration', iteration)
     model.fit(X, y, batch_size=128, nb_epoch=1)
+    model.save_weights("%s.%03d.hdf5" % (path, iteration))
 
     start_index = random.randint(0, len(text) - maxlen - 1)
 
@@ -109,5 +110,3 @@ for iteration in range(start_iteration + 1, 100):
             sys.stdout.write(next_char)
             sys.stdout.flush()
         print()
-
-    model.save_weights("%s.%03d.hdf5" % (path, iteration))
