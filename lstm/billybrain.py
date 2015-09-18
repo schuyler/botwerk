@@ -51,6 +51,7 @@ class Billybrain(object):
         window = text
         generated = ""
         for i in range(length):
+            print("window:", window)
             x = np.zeros((1, maxlen, len(chars)))
             for t, char in enumerate(window):
                 x[0, t, char_indices[char]] = 1.

@@ -9,7 +9,10 @@ model = Pyro4.core.Proxy('PYRONAME:billybrain')
 
 class Billybard(object):
     def tell(self, text):
-        return model.predict_text(text, 255, 0.75)
+        logging.info("< %s" % text)
+        result = model.predict_text(text, 255, 0.2)
+        logging.info("> %s" % result)
+        return result
 
 with Pyro4.core.Daemon() as daemon:
     with Pyro4.naming.locateNS() as ns:
