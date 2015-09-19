@@ -131,7 +131,7 @@ class CharLSTM(object):
 
                 generated += next_char
                 sentence = sentence[1:] + next_char
-            logging.info("[%2.1fº] %s", diversity, generated)
+            logging.info("[T%2.1f] %s", diversity, generated)
 
     def run_training(self, archiver=None):
         self.load_text()
@@ -180,8 +180,9 @@ class Archiver(object):
         self.bucket.put(self.dataset + ".zip", buf.read())
 
 if __name__ == "__main__":
-    dataset = sys.argv[1]
-    logging.basicConfig(filename=dataset+'.log', filemode='w', format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    archiver = Archiver(dataset)
+    config = yaml.load(open(sys.argv[1]).read())
+    log_file = config.get("log_file", "char_lstm.log")
+    logging.basicConfig(filename=log_file, filemode='w', format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    archiver = Archiver(config)
     model = CharLSTM(archiver.text())
     model.run_training(archiver)
