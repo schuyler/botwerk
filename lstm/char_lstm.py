@@ -9,9 +9,9 @@ import yaml, zipfile, simples3, io, shutil
 def show_timing(method):
     def wrapped(*args, **kwargs):
         start = time.time()
-        logging.info("Starting %s", method.__name__)
+        logging.info("--- START %s", method.__name__)
         result = method(*args, **kwargs) 
-        logging.info("Leaving %s (%.2fs elapsed)", method.__name__, time.time() - start)
+        logging.info("--- END %s (%.2fs elapsed)", method.__name__, time.time() - start)
         return result
     return wrapped
 
@@ -25,11 +25,11 @@ class CharLSTM(object):
     @show_timing
     def load_text(self):
         self.text = text = open(self.path).read() #.lower()
-        logging.info('corpus length: %d', len(self.text))
+        logging.info('%s length: %d', self.path, len(self.text))
 
         self.chars = list(set(text))
         self.chars.sort()
-        logging.info('total chars: %d', len(self.chars))
+        logging.info('%s #chars: %d', self.path, len(self.chars))
         self.char_indices = dict((c, i) for i, c in enumerate(self.chars))
 
     @show_timing
@@ -40,7 +40,7 @@ class CharLSTM(object):
         for i in range(0, len(self.text) - self.sequence_length, self.sequence_step):
             self.sentences.append(self.text[i : i + self.sequence_length])
             self.next_chars.append(self.text[i + self.sequence_length])
-        logging.info('nb sequences: %d', len(self.sentences))
+        logging.info('%s #sequences: %d', self.path, len(self.sentences))
 
     def build_training_vectors(self, mode):
         X = np.memmap(self.path + ".example", mode=mode, shape=(len(self.sentences), self.sequence_length, len(self.chars)), dtype=np.bool)
@@ -115,6 +115,7 @@ class CharLSTM(object):
         logging.info('Training iteration #%d', self.iteration)
         self.model.fit(self.X, self.y, batch_size=128, nb_epoch=1)
 
+    @show_timing
     def sample_output(self):
         start_index = random.randint(0, len(self.text) - self.sequence_length - 1)
         for diversity in [0.2, 0.5, 1.0, 1.2]:
@@ -133,6 +134,7 @@ class CharLSTM(object):
                 sentence = sentence[1:] + next_char
             logging.info("[T%2.1f] %s", diversity, generated)
 
+    @show_timing
     def run_training(self, archiver=None):
         self.load_text()
         self.generate_char_sequences()
@@ -162,6 +164,7 @@ class Archiver(object):
 
     @show_timing
     def get(self):
+        logging.info("Getting %s", self.dataset+".zip")
         s3_file = self.bucket.get(self.dataset + ".zip")
         buf = io.BytesIO()
         shutil.copyfileobj(s3_file, buf)
@@ -177,6 +180,7 @@ class Archiver(object):
         zip_file.write(latest)
         zip_file.close()
         buf.seek(0)
+        logging.info("Putting %s", self.dataset+".zip")
         self.bucket.put(self.dataset + ".zip", buf.read())
 
 if __name__ == "__main__":
