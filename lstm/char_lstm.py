@@ -3,14 +3,14 @@ from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 
 import numpy as np
-import random, re, os, logging
+import random, re, os, logging, time, sys
 
 def show_timing(method):
     def wrapped(*args, **kwargs):
         start = time.time()
-        logging.info("Starting %s" % method.__name__)
+        logging.info("Starting %s", method.__name__)
         result = method(*args, **kwargs) 
-        logging.info("Leaving %s (.%2fs elapsed)" % (method.__name__, time.time() - start))
+        logging.info("Leaving %s (%.2fs elapsed)", method.__name__, time.time() - start)
         return result
     return wrapped
 
@@ -24,55 +24,55 @@ class CharLSTM(object):
     @show_timing
     def load_text(self):
         self.text = text = open(self.path).read() #.lower()
-        logging.info('corpus length:', len(text))
+        logging.info('corpus length: %d', len(self.text))
 
         self.chars = list(set(text))
         self.chars.sort()
-        logging.info('total chars:', len(self.chars))
+        logging.info('total chars: %d', len(self.chars))
         self.char_indices = dict((c, i) for i, c in enumerate(self.chars))
 
     @show_timing
     def generate_char_sequences(self):
-        # cut the text in semi-redundant sequences of maxlen characters
+        # cut the text in semi-redundant sequences of self.sequence_length characters
         self.sentences = []
         self.next_chars = []
-        for i in range(0, len(text) - self.sequence_length, self.sequence_step):
-            self.sentences.append(text[i : i + self.sequence_length])
-            self.next_chars.append(text[i + self.sequence_length])
-        logging.info('nb sequences:', len(sentences))
+        for i in range(0, len(self.text) - self.sequence_length, self.sequence_step):
+            self.sentences.append(self.text[i : i + self.sequence_length])
+            self.next_chars.append(self.text[i + self.sequence_length])
+        logging.info('nb sequences: %d', len(self.sentences))
 
     @show_timing
     def generate_training_vectors(self):
         X = np.zeros((len(self.sentences), self.sequence_length, len(self.chars)), dtype=np.bool)
         y = np.zeros((len(self.sentences), len(self.chars)), dtype=np.bool)
-        for i, sentence in enumerate(sentences):
+        for i, sentence in enumerate(self.sentences):
             for t, char in enumerate(sentence):
-                X[i, t, char_indices[char]] = 1
-            y[i, char_indices[next_chars[i]]] = 1
+                X[i, t, self.char_indices[char]] = 1
+            y[i, self.char_indices[self.next_chars[i]]] = 1
         self.X = X
         self.y = y
 
     @show_timing
     def build_model(self):
         self.model = Sequential()
-        self.model.add(LSTM(len(chars), 512, return_sequences=True))
+        self.model.add(LSTM(len(self.chars), 512, return_sequences=True))
         self.model.add(Dropout(0.2))
         self.model.add(LSTM(512, 512, return_sequences=False))
         self.model.add(Dropout(0.2))
-        self.model.add(Dense(512, len(chars)))
+        self.model.add(Dense(512, len(self.chars)))
         self.model.add(Activation('softmax'))
 
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
     @show_timing
     def load_model_weights(self):
-        dirname = os.path.dirname(path) || "."
-        files = [f for f in os.listdir(dirname) if re.match(path + r'\.\d+\.hdf5$', f)]
+        dirname = os.path.dirname(self.path) or "."
+        files = [f for f in os.listdir(dirname) if re.match(self.path + r'\.\d+\.hdf5$', f)]
         if files:
             files.sort()
             w_file = files[-1]
             self.iteration = int(w_file.rsplit(".",2)[-2])
-            logging.info("Loading iteration #%d from %s..." % (self.iteration, w_file))
+            logging.info("Loading iteration #%d from %s...", self.iteration, w_file)
             self.model.load_weights(w_file)
         else:
             logging.info("Starting from scratch...")
@@ -90,24 +90,24 @@ class CharLSTM(object):
     @show_timing
     def train_iteration(self):
         self.iteration += 1
-        logging.info('Training iteration', self.iteration)
+        logging.info('Training iteration #%d', self.iteration)
         self.model.fit(self.X, self.y, batch_size=128, nb_epoch=1)
         self.save_model_weights()
 
     def sample_output(self):
-        start_index = random.randint(0, len(self.text) - maxlen - 1)
+        start_index = random.randint(0, len(self.text) - self.sequence_length - 1)
         for diversity in [0.2, 0.5, 1.0, 1.2]:
             print()
             print('----- diversity:', diversity)
 
             generated = ''
-            sentence = self.text[start_index : start_index + maxlen]
+            sentence = self.text[start_index : start_index + self.sequence_length]
             generated += sentence
             print('----- Generating with seed: "' + sentence + '"')
             sys.stdout.write(generated)
 
             for c in range(400):
-                x = np.zeros((1, maxlen, len(chars)))
+                x = np.zeros((1, self.sequence_length, len(self.chars)))
                 for t, char in enumerate(sentence):
                     x[0, t, self.char_indices[char]] = 1.
 
@@ -133,5 +133,6 @@ class CharLSTM(object):
             self.sample_output()
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     model = CharLSTM(sys.argv[1])
     model.run_training()
