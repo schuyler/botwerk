@@ -41,14 +41,27 @@ class CharLSTM(object):
             self.next_chars.append(self.text[i + self.sequence_length])
         logging.info('nb sequences: %d', len(self.sentences))
 
+    def build_training_vectors(self, mode):
+        X = np.memmap(self.path + ".example", mode=mode, shape=(len(self.sentences), self.sequence_length, len(self.chars)), dtype=np.bool)
+        y = np.memmap(self.path + ".expect", mode=mode, shape=(len(self.sentences), len(self.chars)), dtype=np.bool)
+        return X, y
+
     @show_timing
     def generate_training_vectors(self):
-        X = np.zeros((len(self.sentences), self.sequence_length, len(self.chars)), dtype=np.bool)
-        y = np.zeros((len(self.sentences), len(self.chars)), dtype=np.bool)
-        for i, sentence in enumerate(self.sentences):
-            for t, char in enumerate(sentence):
-                X[i, t, self.char_indices[char]] = 1
-            y[i, self.char_indices[self.next_chars[i]]] = 1
+        if os.path.isfile(self.path + ".example"):
+            mode = "r"
+        else:
+            mode = "w+"
+        X, y = self.build_training_vectors(mode)
+        if mode != "r":
+            for i, sentence in enumerate(self.sentences):
+                for t, char in enumerate(sentence):
+                    X[i, t, self.char_indices[char]] = 1
+                y[i, self.char_indices[self.next_chars[i]]] = 1
+            # save and re-open
+            del X
+            del y
+            X, y = self.build_training_vectors("r")
         self.X = X
         self.y = y
 
