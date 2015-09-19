@@ -14,9 +14,9 @@ numpy
 gensim
 
 # keras
-# ¯\_(ツ)_/¯
 keras
 
 
 # nltk... yayyy
 nltk
+ipython
