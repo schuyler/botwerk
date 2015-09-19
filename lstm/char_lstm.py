@@ -4,6 +4,7 @@ from keras.layers.recurrent import LSTM
 
 import numpy as np
 import random, re, os, logging, time, sys
+import yaml, zipfile, simples3, io, shutil
 
 def show_timing(method):
     def wrapped(*args, **kwargs):
@@ -77,13 +78,19 @@ class CharLSTM(object):
 
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
 
-    @show_timing
-    def load_model_weights(self):
+    def find_latest_checkpoint(self):
         dirname = os.path.dirname(self.path) or "."
         files = [f for f in os.listdir(dirname) if re.match(self.path + r'\.\d+\.hdf5$', f)]
         if files:
             files.sort()
-            w_file = files[-1]
+            return files[-1]
+        else:
+            return None
+
+    @show_timing
+    def load_model_weights(self):
+        w_file = self.find_latest_checkpoint()
+        if w_file:
             self.iteration = int(w_file.rsplit(".",2)[-2])
             logging.info("Loading iteration #%d from %s...", self.iteration, w_file)
             self.model.load_weights(w_file)
@@ -92,7 +99,9 @@ class CharLSTM(object):
 
     @show_timing
     def save_model_weights(self):
-        self.model.save_weights("%s.%03d.hdf5" % (self.path, self.iteration))
+        w_file = "%s.%03d.hdf5" % (self.path, self.iteration)
+        self.model.save_weights(w_file)
+        return w_file
 
     # helper function to sample an index from a probability array
     def sample(self, a, temperature=1.0):
@@ -105,7 +114,6 @@ class CharLSTM(object):
         self.iteration += 1
         logging.info('Training iteration #%d', self.iteration)
         self.model.fit(self.X, self.y, batch_size=128, nb_epoch=1)
-        self.save_model_weights()
 
     def sample_output(self):
         start_index = random.randint(0, len(self.text) - self.sequence_length - 1)
@@ -135,7 +143,7 @@ class CharLSTM(object):
                 sys.stdout.flush()
             print()
 
-    def run_training(self):
+    def run_training(self, archiver=None):
         self.load_text()
         self.generate_char_sequences()
         self.generate_training_vectors()
@@ -143,9 +151,46 @@ class CharLSTM(object):
         self.load_model_weights()
         while True:
             self.train_iteration()
+            if archiver:
+                archiver.put(self)
+            else:
+                self.save_model_weights()
             self.sample_output()
+
+class Archiver(object):
+    def __init__(self, config):
+        if type(config) is not dict:
+            config = yaml.load(open(config).read())
+        self.bucket = simples3.bucket.S3Bucket(config["bucket"],
+                access_key=config["access_key"],
+                secret_key=config["secret_key"])
+        self.dataset = config["dataset"]
+
+    def text(self):
+        self.get()
+        return self.dataset + ".txt"
+
+    @show_timing
+    def get(self):
+        s3_file = self.bucket.get(self.dataset + ".zip")
+        buf = io.BytesIO()
+        shutil.copyfileobj(s3_file, buf)
+        zip_file = zipfile.ZipFile(buf)
+        zip_file.extractall()
+
+    @show_timing
+    def put(self, model):
+        latest = model.save_model_weights()
+        buf = io.BytesIO()
+        zip_file = zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED)
+        zip_file.write(self.dataset + ".txt")
+        zip_file.write(latest)
+        zip_file.close()
+        buf.seek(0)
+        self.bucket.put(self.dataset + ".zip", buf.read())
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    model = CharLSTM(sys.argv[1])
-    model.run_training()
+    archiver = Archiver(sys.argv[1])
+    model = CharLSTM(archiver.text())
+    model.run_training(archiver)
