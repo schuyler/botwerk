@@ -11,5 +11,5 @@
 #
 # By default this script does nothing.
 
-su -c "screen ~/botsnpieces/launch.sh" ubuntu &
+su -c "screen ~/botsnpieces/spot/launch.sh" ubuntu &
 exit 0
