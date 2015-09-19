@@ -118,15 +118,8 @@ class CharLSTM(object):
     def sample_output(self):
         start_index = random.randint(0, len(self.text) - self.sequence_length - 1)
         for diversity in [0.2, 0.5, 1.0, 1.2]:
-            print()
-            print('----- diversity:', diversity)
-
-            generated = ''
             sentence = self.text[start_index : start_index + self.sequence_length]
-            generated += sentence
-            print('----- Generating with seed: "' + sentence + '"')
-            sys.stdout.write(generated)
-
+            generated = sentence
             for c in range(400):
                 x = np.zeros((1, self.sequence_length, len(self.chars)))
                 for t, char in enumerate(sentence):
@@ -138,10 +131,7 @@ class CharLSTM(object):
 
                 generated += next_char
                 sentence = sentence[1:] + next_char
-
-                sys.stdout.write(next_char)
-                sys.stdout.flush()
-            print()
+            logging.info("[%2.1fº] %s", diversity, generated)
 
     def run_training(self, archiver=None):
         self.load_text()
@@ -190,7 +180,8 @@ class Archiver(object):
         self.bucket.put(self.dataset + ".zip", buf.read())
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    archiver = Archiver(sys.argv[1])
+    dataset = sys.argv[1]
+    logging.basicConfig(filename=dataset+'.log', filemode='w', format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    archiver = Archiver(dataset)
     model = CharLSTM(archiver.text())
     model.run_training(archiver)
