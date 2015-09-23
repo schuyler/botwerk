@@ -1,0 +1,5 @@
+DEBUG: true
+SLACK_TOKEN: "..."
+pyrobot:
+    name: annalogue
+    user_id: U...
