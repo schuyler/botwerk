@@ -1,8 +1,14 @@
 # Botwerk
 
-_Botwerk_ is meant to be a toolkit for developing chat bots and other
-generative text applications in Python, using neural networks and distributed
-representations of words and text sequences, and maybe some other stuff eventually.
+_Botwerk_, in the sense of [a factory or a workshop](https://en.wiktionary.org/wiki/Werk#Noun), is meant to be a collection of techniques for managing language models and making generative text applications out of them. The code is all in Python for now, but whatever.
+
+Right now the two working language models are character-based recurrent neural nets ("char-RNN" etc.), and a neural method for estimating term vectors in a distributed representation called word2vec. 
+
+Botwerk also contains code for creating bot agents and connecting them both to language models and transport mechanisms. Right now the only transport supported is Slack, but I want to build that out ASAP: Twitter, IRC, Hangouts, I'll take other suggestions. 
+
+Finally Botwerk has some code to make it convenient to spin up training runs on persistent EC2 spot requests, and for posting trained models to S3.
+
+Botwerk is emphatically not ever intended to do anything useful. I want it to be a creative palette and a platform for developing intellectual curiosity.
 
 ## "Architecture"
 
@@ -50,25 +56,24 @@ Anything in this repo that identifiably came from somewhere is the property of
 its creators and is provided here for convenience under its original license.
 
 Everything else is copyright (c) 2015 Schuyler Erle, and is offered under the
-MIT License in the fervent hope that it will be useful, or at least
-entertaining:
+MIT License, in the fervent hope that it will be entertaining:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
+> Permission is hereby granted, free of charge, to any person obtaining a copy of
+> this software and associated documentation files (the "Software"), to deal in
+> the Software without restriction, including without limitation the rights to
+> use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+> of the Software, and to permit persons to whom the Software is furnished to do
+> so, subject to the following conditions:
+>
+>The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
--=- PATCHES WELCOME -=-
+-=- **PATCHES WELCOME** -=-
